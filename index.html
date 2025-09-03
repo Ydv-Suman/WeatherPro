@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherPro - Advanced Weather Forecast</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <!--  background  -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Units Toggle -->
+    <div class="units-toggle">
+        <button class="unit-btn active" data-unit="imperial">°F</button>
+        <button class="unit-btn" data-unit="metric">°C</button>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <h1><i class="fas fa-cloud-sun"></i> WeatherPro</h1>
+        <p> Weather Forecasting </p>
+    </header>
+
+    <!-- Search Container -->
+    <div class="search-container">
+        <form class="weather-form" id="weatherForm">
+            <div class="search-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" id="cityInput" placeholder="Search for any city worldwide..." autocomplete="off">
+            </div>
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </form>
+
+        <!-- Quick Action Buttons -->
+        <div class="quick-actions">
+            <button class="quick-btn" onclick="getCurrentLocation()">
+                <i class="fas fa-location-arrow"></i> Current Location
+            </button>
+            <button class="quick-btn" onclick="searchCity('New York')">New York</button>
+            <button class="quick-btn" onclick="searchCity('London')">London</button>
+            <button class="quick-btn" onclick="searchCity('Tokyo')">Tokyo</button>
+            <button class="quick-btn" onclick="searchCity('Paris')">Paris</button>
+            <button class="quick-btn" onclick="toggleComparison()">
+                <i class="fas fa-balance-scale"></i> Compare
+            </button>
+            <button class="quick-btn" onclick="toggleFavorites()">
+                <i class="fas fa-heart"></i> Favorites
+            </button>
+            <button class="quick-btn" onclick="shareWeather()">
+                <i class="fas fa-share-alt"></i> Share
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Animation -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Fetching weather data...</p>
+    </div>
+
+    <!-- Weather Container -->
+    <div class="weather-container" id="weatherContainer" style="display: none;">
+        
+        <!-- Weather Map Toggle -->
+        <div class="map-toggle-container">
+            <button class="map-toggle-btn" id="mapToggle">
+                <i class="fas fa-map"></i> Show Weather Map
+            </button>
+        </div>
+
+        <!-- Interactive Weather Map -->
+        <div class="weather-map hidden" id="weatherMap">
+            <div class="map-controls">
+                <button class="map-btn active" data-layer="temp">Temperature</button>
+                <button class="map-btn" data-layer="precipitation">Precipitation</button>
+                <button class="map-btn" data-layer="wind">Wind</button>
+                <button class="map-btn" data-layer="clouds">Clouds</button>
+            </div>
+            <iframe id="mapFrame" width="100%" height="400" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" 
+                    src="https://openweathermap.org/weathermap?basemap=map&cities=false&layer=temperature&lat=40&lon=-74&zoom=5">
+            </iframe>
+        </div>
+
+        <!-- Air Quality Index -->
+        <div class="air-quality-section" id="airQualitySection" style="display: none;">
+            <div class="section-header">
+                <h3><i class="fas fa-lungs"></i> Air Quality Index</h3>
+            </div>
+            <div class="aqi-container">
+                <div class="aqi-circle" id="aqiCircle">
+                    <div class="aqi-value" id="aqiValue">--</div>
+                    <div class="aqi-label">AQI</div>
+                </div>
+                <div class="aqi-details" id="aqiDetails">
+                    <div class="aqi-status" id="aqiStatus">Good</div>
+                    <div class="aqi-description" id="aqiDescription">Air quality is satisfactory</div>
+                </div>
+            </div>
+            <div class="pollutants-grid" id="pollutantsGrid">
+            </div>
+        </div>
+
+        <!-- Weather Alerts -->
+        <div class="weather-alerts-section" id="weatherAlertsSection" style="display: none;">
+            <div class="section-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> Weather Alerts</h3>
+            </div>
+            <div class="alerts-container" id="alertsContainer">
+            </div>
+        </div>
+
+        <!-- Weather History Chart -->
+        <div class="weather-history-section">
+            <div class="section-header">
+                <h3><i class="fas fa-chart-line"></i> 24-Hour Temperature Trend</h3>
+                <div class="chart-controls">
+                    <button class="chart-btn active" data-chart="temperature">Temperature</button>
+                    <button class="chart-btn" data-chart="humidity">Humidity</button>
+                    <button class="chart-btn" data-chart="pressure">Pressure</button>
+                </div>
+            </div>
+            <canvas id="weatherChart" height="250"></canvas>
+        </div>
+
+        <!-- Current Weather -->
+        <div class="current-weather">
+            <!-- Weather Comparison -->
+            <div class="weather-comparison" id="weatherComparison" style="display: none;">
+                <div class="comparison-header">
+                    <h4><i class="fas fa-balance-scale"></i> Compare Cities</h4>
+                    <button class="close-comparison" id="closeComparison">×</button>
+                </div>
+                <div class="comparison-grid" id="comparisonGrid">
+                </div>
+            </div>
+
+            <div class="weather-main">
+                <div class="weather-left">
+                    <h2 id="cityName">City Name</h2>
+                    <div class="date" id="currentDate"></div>
+                    <div class="description" id="weatherDescription">Clear Sky</div>
+                </div>
+                <div class="weather-center">
+                    <div class="weather-emoji" id="weatherEmoji">☀️</div>
+                </div>
+                <div class="weather-right">
+                    <div class="temperature" id="temperature">72°F</div>
+                    <div class="feels-like" id="feelsLike">Feels like 75°F</div>
+                </div>
+            </div>
+
+            <!-- Weather Stats -->
+            <div class="weather-stats">
+                <div class="stat-card">
+                    <i class="fas fa-tint stat-icon"></i>
+                    <div class="stat-value" id="humidity">65</div>
+                    <div class="stat-label">Humidity (%)</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-wind stat-icon"></i>
+                    <div class="stat-value" id="windSpeed">12</div>
+                    <div class="stat-label">Wind Speed (mph)</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-thermometer-half stat-icon"></i>
+                    <div class="stat-value" id="pressure">1013</div>
+                    <div class="stat-label">Pressure (hPa)</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-eye stat-icon"></i>
+                    <div class="stat-value" id="visibility">10</div>
+                    <div class="stat-label">Visibility (km)</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-sun stat-icon"></i>
+                    <div class="stat-value" id="uvIndex">5</div>
+                    <div class="stat-label">UV Index</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-cloud stat-icon"></i>
+                    <div class="stat-value" id="cloudiness">25</div>
+                    <div class="stat-label">Cloudiness (%)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forecast Section -->
+        <div class="forecast-section">
+            <h3 class="forecast-header"><i class="fas fa-calendar-week"></i> 6-Day Forecast</h3>
+            <div class="forecast-grid" id="forecastGrid">
+            </div>
+        </div>
+    </div>
+
+    <!-- Favorites -->
+    <div class="favorites-modal hidden" id="favoritesModal">
+        <div class="favorites-content">
+            <div class="favorites-header">
+                <h3><i class="fas fa-heart"></i> Favorite Cities</h3>
+                <button class="close-comparison" onclick="toggleFavorites()">×</button>
+            </div>
+            <div id="favoritesList">
+                <p style="opacity: 0.7; text-align: center;">No favorite cities added yet</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
